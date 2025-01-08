@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body {
+      width: 250px;
+      padding: 16px;
+      background: #1a1a1a;
+      margin: 0;
+    }
+    
+    .speed-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    
+    .speed-button {
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      background: #4285f4;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .speed-button.selected {
+      background: #ff9800;
+    }
+    
+    #customSpeed {
+      padding: 8px 12px;
+      border-radius: 8px;
+      border: 1px solid #444;
+      background: #333;
+      color: white;
+      font-size: 16px;
+      height: 44px;
+      box-sizing: border-box;
+      width: 100%;
+    }
+    
+    #setCustomSpeed {
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      background: #34a853;
+      color: white;
+      cursor: pointer;
+      height: 44px;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .arrow-controls {
+      display: grid;
+      grid-template-rows: 1fr 1fr;
+      gap: 4px;
+      height: 44px;
+    }
+
+    .arrow-button {
+      padding: 0;
+      border: none;
+      border-radius: 8px;
+      background: #34a853;
+      color: white;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: system-ui;
+      font-size: 18px;
+    }
+
+    /* Remove number input spinners */
+    input[type=number]::-webkit-inner-spin-button, 
+    input[type=number]::-webkit-outer-spin-button { 
+      -webkit-appearance: none; 
+      margin: 0; 
+    }
+  </style>
+</head>
+<body>
+  <div class="speed-row">
+    <button class="speed-button" data-speed="0.5">0.5x</button>
+    <button class="speed-button" data-speed="1">1x</button>
+    <button class="speed-button" data-speed="1.5">1.5x</button>
+  </div>
+  <div class="speed-row">
+    <button class="speed-button" data-speed="2">2x</button>
+    <button class="speed-button" data-speed="2.5">2.5x</button>
+    <button class="speed-button" data-speed="3">3x</button>
+  </div>
+  <div class="speed-row">
+    <input type="number" id="customSpeed" placeholder="Speed" step="0.1" min="0.1" max="16" value="1.00">
+    <button id="setCustomSpeed">Set</button>
+    <div class="arrow-controls">
+      <button class="arrow-button" id="speedUp">+</button>
+      <button class="arrow-button" id="speedDown">-</button>
+    </div>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>

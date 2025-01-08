@@ -1,0 +1,30 @@
+{
+  "manifest_version": 3,
+  "name": "Simple Video Speed Controller",
+  "version": "1.0",
+  "permissions": [
+    "storage",    // Required for saving speed settings
+    "scripting",  // Required for injecting content script
+    "activeTab",  // Required for accessing current tab
+    "tabs",       // Required for querying tabs
+    "commands"    // Required for keyboard commands
+  ],
+  "description": "Automatically adjust video speed on any website. Use CMD+Option+Plus/Minus/Delete (Mac) or Ctrl+Alt+Plus/Minus/Delete (Windows) for keyboard shortcuts.",
+  "icons": {
+    "48": "icon.png"
+  },
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "all_frames": true,     // Run in all iframes
+      "run_at": "document_idle"  // Run after page load
+    }
+  ],
+  "background": {
+    "service_worker": "background.js"
+  }
+}
