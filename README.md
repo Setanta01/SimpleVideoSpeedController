@@ -1,8 +1,9 @@
 # Simple Video Speed Controller
+<img width="100" alt="Icon" src="https://github.com/user-attachments/assets/17514be3-7964-4000-982c-143bbcfaa1c0" />
 
 A lightweight and intuitive Chrome extension that lets you control video playback speed on any streaming service or website. Perfect for watching tutorials, lectures, or any online video content at your preferred pace.
 
-![Extension Popup Interface](path/to/popup-screenshot.png)
+<img width="250" alt="Interface" src="https://github.com/user-attachments/assets/217f4ea7-7bb2-4732-8d09-90621a36d622" />
 
 ## Features
 
