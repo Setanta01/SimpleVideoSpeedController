@@ -12,10 +12,10 @@ A lightweight and intuitive Chrome extension that lets you control video playbac
 - **Keyboard Shortcuts**:
   - Mac: `Command + Option + Plus` to increase speed
   - Mac: `Command + Option + Minus` to decrease speed
-  - Mac: `Command + Option + Delete` to reset to normal speed
+  - Mac: `Command + Option + Delete` to reset to 1x speed
   - Windows: `Ctrl + Alt + Plus` to increase speed
   - Windows: `Ctrl + Alt + Minus` to decrease speed
-  - Windows: `Ctrl + Alt + Delete` to reset to normal speed
+  - Windows: `Ctrl + Alt + Delete` to reset to 1x speed
 
 - **Clean, Intuitive Interface**:
   - Quick preset buttons for common speeds (0.5x to 3x)
