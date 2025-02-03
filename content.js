@@ -51,25 +51,37 @@ function getDomain() {
 }
 
 /**
+ * Force update all video speeds
+ */
+function forceUpdateVideoSpeeds(speed) {
+  const videos = document.querySelectorAll('video');
+  videos.forEach((video) => {
+    // Force reset the speed to trigger the change
+    if (video) {
+      video.playbackRate = 1;
+      video.playbackRate = speed;
+    }
+  });
+}
+
+/**
  * Sets playback speed for all video elements
  */
-function setVideoSpeed(speed) {
+async function setVideoSpeed(speed, skipStorage = false) {
   try {
+    console.log(`Setting video speed to ${speed} (skipStorage: ${skipStorage})`);
     currentSpeed = speed;
-    const videos = document.querySelectorAll('video');
-    videos.forEach((video) => {
-      if (video && video.playbackRate !== speed) {
-        video.playbackRate = speed;
-      }
-    });
+    forceUpdateVideoSpeeds(speed);
 
-    // Save speed setting
-    const domain = getDomain();
-    chrome.storage.sync.get('domainSpeeds', (data) => {
+    // Save speed setting if not skipped
+    if (!skipStorage) {
+      const domain = getDomain();
+      const data = await chrome.storage.sync.get('domainSpeeds');
       const domainSpeeds = data.domainSpeeds || {};
       domainSpeeds[domain] = speed;
-      chrome.storage.sync.set({ domainSpeeds });
-    });
+      await chrome.storage.sync.set({ domainSpeeds });
+      console.log(`Saved speed ${speed} for domain ${domain}`);
+    }
   } catch (error) {
     console.error('Error setting video speed:', error);
   }
@@ -78,13 +90,17 @@ function setVideoSpeed(speed) {
 /**
  * Loads and applies saved speed setting
  */
-function applySavedSpeed() {
-  const domain = getDomain();
-  chrome.storage.sync.get('domainSpeeds', (data) => {
+async function applySavedSpeed() {
+  try {
+    const domain = getDomain();
+    const data = await chrome.storage.sync.get('domainSpeeds');
     const domainSpeeds = data.domainSpeeds || {};
     const savedSpeed = domainSpeeds[domain] || 1;
-    setVideoSpeed(savedSpeed);
-  });
+    console.log(`Loading saved speed for ${domain}: ${savedSpeed}`);
+    await setVideoSpeed(savedSpeed, true);
+  } catch (error) {
+    console.error('Error loading saved speed:', error);
+  }
 }
 
 /**
@@ -93,16 +109,34 @@ function applySavedSpeed() {
 function monitorVideoElements() {
   const videos = document.querySelectorAll('video');
   videos.forEach(video => {
+    // Remove existing listeners first
+    video.removeEventListener('ratechange', handleRateChange);
+    video.removeEventListener('play', handlePlay);
+    video.removeEventListener('loadedmetadata', handleLoadedMetadata);
+    
+    // Add fresh listeners
+    video.addEventListener('ratechange', handleRateChange);
+    video.addEventListener('play', handlePlay);
+    video.addEventListener('loadedmetadata', handleLoadedMetadata);
+    
+    // Set initial speed
     video.playbackRate = currentSpeed;
-    
-    video.addEventListener('play', () => {
-      video.playbackRate = currentSpeed;
-    });
-    
-    video.addEventListener('loadedmetadata', () => {
-      video.playbackRate = currentSpeed;
-    });
   });
+}
+
+// Event handlers for video elements
+function handleRateChange(event) {
+  if (event.target.playbackRate !== currentSpeed) {
+    event.target.playbackRate = currentSpeed;
+  }
+}
+
+function handlePlay() {
+  this.playbackRate = currentSpeed;
+}
+
+function handleLoadedMetadata() {
+  this.playbackRate = currentSpeed;
 }
 
 // Watch for dynamically added videos
@@ -117,6 +151,28 @@ const observer = new MutationObserver((mutations) => {
 observer.observe(document.body, {
   childList: true,
   subtree: true
+});
+
+// Listen for storage changes
+chrome.storage.onChanged.addListener((changes, namespace) => {
+  if (namespace === 'sync' && changes.domainSpeeds) {
+    const domain = getDomain();
+    const domainSpeeds = changes.domainSpeeds.newValue || {};
+    const newSpeed = domainSpeeds[domain];
+    
+    console.log('Storage changed:', {
+      domain,
+      newSpeed,
+      currentSpeed,
+      allDomainSpeeds: domainSpeeds
+    });
+    
+    if (newSpeed && newSpeed !== currentSpeed) {
+      console.log(`Updating speed from storage change: ${newSpeed}`);
+      setVideoSpeed(newSpeed, true);
+      showToast(newSpeed);
+    }
+  }
 });
 
 // Handle keyboard shortcuts
@@ -167,12 +223,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 applySavedSpeed();
 monitorVideoElements();
 
-// Periodic check
+// More aggressive periodic check
 setInterval(() => {
-  const videos = document.querySelectorAll('video');
-  videos.forEach(video => {
-    if (video.playbackRate !== currentSpeed) {
-      video.playbackRate = currentSpeed;
-    }
-  });
+  forceUpdateVideoSpeeds(currentSpeed);
 }, 1000);
