@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <meta charset='UTF-8' />
   <style>
     body {
       width: 250px;
@@ -97,6 +98,62 @@
       transform: translateY(-1px);
     }
 
+    /* Pin suggestion overlay */
+    .pin-suggestion {
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.9);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 20px;
+      color: white;
+      animation: fadeIn 0.3s ease-out;
+    }
+
+    .pin-suggestion.show {
+      display: flex;
+    }
+
+    .pin-suggestion p {
+      margin: 0 0 16px 0;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+
+    .pin-icon {
+      font-size: 30px;
+      margin-bottom: 12px;
+      font-family: Lucida Unicode;
+    }
+
+    .got-it-btn {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 6px;
+      background: #4285f4;
+      color: white;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.2s ease;
+    }
+
+    .got-it-btn:hover {
+      transform: translateY(-1px);
+      background: #5295ff;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+
     /* Remove number input spinners */
     input[type=number]::-webkit-inner-spin-button, 
     input[type=number]::-webkit-outer-spin-button { 
@@ -124,6 +181,14 @@
       <button class="arrow-button" id="speedDown">-</button>
     </div>
   </div>
+
+  <!-- Pin suggestion overlay -->
+  <div class="pin-suggestion">
+    <div class="pin-icon">↻ & 📌</div>
+    <p>Reload your tabs and pin this extension for easy access!</p>
+    <button class="got-it-btn">Got it!</button>
+  </div>
+
   <script src="popup.js"></script>
 </body>
 </html>

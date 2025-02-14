@@ -3,9 +3,34 @@ let currentSpeed = 1;
 let currentDomain = '';
 
 /**
+ * Check if this is the first time opening the popup
+ */
+async function checkFirstOpen() {
+  try {
+    const data = await chrome.storage.sync.get('hasSeenPinSuggestion');
+    if (!data.hasSeenPinSuggestion) {
+      // Show pin suggestion
+      document.querySelector('.pin-suggestion').classList.add('show');
+      
+      // Add click handler for the "Got it" button
+      document.querySelector('.got-it-btn').addEventListener('click', async () => {
+        document.querySelector('.pin-suggestion').classList.remove('show');
+        // Mark as seen
+        await chrome.storage.sync.set({ hasSeenPinSuggestion: true });
+      });
+    }
+  } catch (error) {
+    console.error('Error checking first open:', error);
+  }
+}
+
+/**
  * Initialize the popup UI and load saved settings
  */
 document.addEventListener('DOMContentLoaded', async () => {
+  // Check for first-time open
+  await checkFirstOpen();
+
   // Set default value in custom speed input
   const customSpeedInput = document.getElementById('customSpeed');
   if (customSpeedInput) {
