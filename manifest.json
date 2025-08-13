@@ -9,6 +9,9 @@
     "tabs",
     "commands"
   ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
   "description": "Automatically adjust video speed on any website.",
   "icons": {
     "16": "icon.png",
@@ -21,14 +24,17 @@
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
+      "exclude_matches": [
+       
+        
+      ],
       "js": ["content.js"],
       "all_frames": true,
       "run_at": "document_idle"
     }
   ],
   "background": {
-    "service_worker": "background.js",
-    "scripts": ["background.js"]
+    "service_worker": "background.js"
   },
   "browser_specific_settings": {
     "gecko": {

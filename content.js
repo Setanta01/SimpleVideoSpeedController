@@ -1,3 +1,5 @@
+
+
 // Add toast styles that work in both normal and fullscreen modes
 const toastStyles = document.createElement('style');
 toastStyles.textContent = `
@@ -56,10 +58,15 @@ function getDomain() {
 function forceUpdateVideoSpeeds(speed) {
   const videos = document.querySelectorAll('video');
   videos.forEach((video) => {
-    // Force reset the speed to trigger the change
-    if (video) {
-      video.playbackRate = 1;
+    try {
       video.playbackRate = speed;
+
+      // Testa se realmente foi alterado
+      if (video.playbackRate !== speed) {
+        console.warn('Playback rate not allowed on this video');
+      }
+    } catch (err) {
+      console.warn('Cannot set playbackRate on this video:', err.message);
     }
   });
 }
@@ -106,23 +113,28 @@ async function applySavedSpeed() {
 /**
  * Monitors and maintains speed settings for video elements
  */
+function isCrunchyroll() {
+  return window.location.hostname.includes("crunchyroll.com");
+}
+
 function monitorVideoElements() {
   const videos = document.querySelectorAll('video');
   videos.forEach(video => {
-    // Remove existing listeners first
+    // Se for Crunchyroll, não force handlers
+    if (isCrunchyroll()) return;
+
     video.removeEventListener('ratechange', handleRateChange);
     video.removeEventListener('play', handlePlay);
     video.removeEventListener('loadedmetadata', handleLoadedMetadata);
-    
-    // Add fresh listeners
+
     video.addEventListener('ratechange', handleRateChange);
     video.addEventListener('play', handlePlay);
     video.addEventListener('loadedmetadata', handleLoadedMetadata);
-    
-    // Set initial speed
+
     video.playbackRate = currentSpeed;
   });
 }
+
 
 // Event handlers for video elements
 function handleRateChange(event) {
