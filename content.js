@@ -74,6 +74,7 @@
   }
 
 let ignoreStorageChange = false;
+let saveTimeout;
 
 async function setVideoSpeed(speed, skipStorage = false) {
   try {
