@@ -1,13 +1,11 @@
 (() => {
-  // Evita execução duplicada no mesmo frame
+
   if (window.__simpleVideoSpeedControllerLoaded) {
     return;
   }
   window.__simpleVideoSpeedControllerLoaded = true;
 
 
-
-  // Add toast styles que só injeta uma vez
   if (!document.getElementById('__toastStyles')) {
     const toastStyles = document.createElement('style');
     toastStyles.id = '__toastStyles';
@@ -33,7 +31,6 @@
     document.head.appendChild(toastStyles);
   }
 
-  // Create toast element (apenas uma vez)
   let toast = document.getElementById('speed-toast');
   if (!toast) {
     toast = document.createElement('div');
@@ -41,10 +38,8 @@
     document.body.appendChild(toast);
   }
 
-  // Variável global de velocidade
   let currentSpeed = 1;
 
-  // Mostra toast com a velocidade
   let toastTimeout;
   function showToast(speed) {
     toast.textContent = `${speed}x`;
@@ -73,43 +68,27 @@
     });
   }
 
-let ignoreStorageChange = false;
-let saveTimeout;
+  let saveTimeout;
 
-async function setVideoSpeed(speed, skipStorage = false) {
-  try {
-    currentSpeed = speed;
-    forceUpdateVideoSpeeds(speed);
-
-    if (!skipStorage) {
-      if (saveTimeout) clearTimeout(saveTimeout);
-
-      saveTimeout = setTimeout(async () => {
-        ignoreStorageChange = true; // marca que a mudança é "local"
-        const domain = getDomain();
-        const data = await chrome.storage.sync.get('domainSpeeds');
-        const domainSpeeds = data.domainSpeeds || {};
-        domainSpeeds[domain] = speed;
-        await chrome.storage.sync.set({ domainSpeeds });
-        console.log(`Saved speed ${speed} for domain ${domain}`);
-        setTimeout(() => ignoreStorageChange = false, 100); // reset após salvar
-      }, 1000);
+  async function setVideoSpeed(speed, skipStorage = false) {
+    try {
+      currentSpeed = speed;
+      forceUpdateVideoSpeeds(speed);
+      if (!skipStorage) {
+        if (saveTimeout) clearTimeout(saveTimeout);
+        saveTimeout = setTimeout(async () => {
+          const domain = getDomain();
+          const data = await chrome.storage.sync.get('domainSpeeds');
+          const domainSpeeds = data.domainSpeeds || {};
+          domainSpeeds[domain] = speed;
+          await chrome.storage.sync.set({ domainSpeeds });
+          console.log(`Saved speed ${speed} for domain ${domain}`);
+        }, 1000);
+      }
+    } catch (error) {
+      console.error('Error setting video speed:', error);
     }
-  } catch (error) {
-    console.error('Error setting video speed:', error);
   }
-}
-
-// listener do storage
-chrome.storage.onChanged.addListener((changes, area) => {
-  if (ignoreStorageChange) return; // ignora se foi a própria aba
-  if (changes.domainSpeeds) {
-    const domain = getDomain();
-    const newSpeed = changes.domainSpeeds.newValue[domain];
-    if (newSpeed !== currentSpeed) setVideoSpeed(newSpeed, true);
-  }
-});
-
 
   async function applySavedSpeed() {
     try {
@@ -131,16 +110,16 @@ chrome.storage.onChanged.addListener((changes, area) => {
   function monitorVideoElements() {
     const videos = document.querySelectorAll('video');
     videos.forEach(video => {
-      if (isCrunchyroll()) {video.playbackRate = currentSpeed; return;}
-
+      if (isCrunchyroll()) {
+        video.playbackRate = currentSpeed;
+        return;
+      }
       video.removeEventListener('ratechange', handleRateChange);
       video.removeEventListener('play', handlePlay);
       video.removeEventListener('loadedmetadata', handleLoadedMetadata);
-
       video.addEventListener('ratechange', handleRateChange);
       video.addEventListener('play', handlePlay);
       video.addEventListener('loadedmetadata', handleLoadedMetadata);
-
       video.playbackRate = currentSpeed;
     });
   }
@@ -161,45 +140,24 @@ chrome.storage.onChanged.addListener((changes, area) => {
 
   let throttleTimeout;
   const observer = new MutationObserver((mutations) => {
-  if (throttleTimeout) return; // Ignora mutações até o timeout expirar
-  const hasAddedNodes = mutations.some(mutation => mutation.addedNodes.length > 0);
-  if (!hasAddedNodes) return
-  throttleTimeout = setTimeout(() => {
-    monitorVideoElements();
-    throttleTimeout = null;
-  }, 100); // Ajuste o tempo (ms) conforme necessário
-});
+    if (throttleTimeout) return;
+    const hasAddedNodes = mutations.some(mutation => mutation.addedNodes.length > 0);
+    if (!hasAddedNodes) return;
+    throttleTimeout = setTimeout(() => {
+      monitorVideoElements();
+      throttleTimeout = null;
+    }, 100);
+  });
 
   observer.observe(document.body, {
-  childList: true,
-  subtree: true,
-  attributes: false,
-  characterData: false
-});
-
-  chrome.storage.onChanged.addListener((changes, namespace) => {
-    if (namespace === 'sync' && changes.domainSpeeds) {
-      const domain = getDomain();
-      const domainSpeeds = changes.domainSpeeds.newValue || {};
-      const newSpeed = domainSpeeds[domain];
-
-      console.log('Storage changed:', {
-        domain,
-        newSpeed,
-        currentSpeed,
-        allDomainSpeeds: domainSpeeds
-      });
-
-      if (newSpeed && newSpeed !== currentSpeed) {
-        console.log(`Updating speed from storage change: ${newSpeed}`);
-        setVideoSpeed(newSpeed, true);
-        showToast(newSpeed);
-      }
-    }
+    childList: true,
+    subtree: true,
+    attributes: false,
+    characterData: false
   });
 
   document.addEventListener('keydown', (e) => {
-    if (e.metaKey && e.altKey) { // For Mac: Command + Option
+    if (e.metaKey && e.altKey) {
       let newSpeed;
       switch (e.code) {
         case 'Equal':
@@ -211,7 +169,6 @@ chrome.storage.onChanged.addListener((changes, area) => {
           setVideoSpeed(newSpeed);
           showToast(newSpeed);
           break;
-
         case 'Minus':
         case 'NumpadSubtract':
           e.preventDefault();
@@ -220,9 +177,8 @@ chrome.storage.onChanged.addListener((changes, area) => {
           setVideoSpeed(newSpeed);
           showToast(newSpeed);
           break;
-
         case 'Delete':
-        case 'Backspace':  
+        case 'Backspace':
           e.preventDefault();
           e.stopPropagation();
           setVideoSpeed(1);
@@ -245,10 +201,9 @@ chrome.storage.onChanged.addListener((changes, area) => {
 
   let lastSpeed = currentSpeed;
   setInterval(() => {
-  if (currentSpeed !== lastSpeed) {
-    forceUpdateVideoSpeeds(currentSpeed);
-    lastSpeed = currentSpeed;
-  }
-}, 1000);
-
+    if (currentSpeed !== lastSpeed) {
+      forceUpdateVideoSpeeds(currentSpeed);
+      lastSpeed = currentSpeed;
+    }
+  }, 1000);
 })();
